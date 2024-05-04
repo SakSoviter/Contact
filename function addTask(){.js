@@ -215,3 +215,38 @@ function validatePhone(phone) {
   // Load contacts from local storage on page load
   loadContacts();
 });
+document.addEventListener('DOMContentLoaded', function () {
+  const contactForm = document.getElementById('contactForm');
+  const contactList = document.getElementById('contactList');
+  
+  // Function to display user information in real-time
+  function displayUserInfo() {
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+
+    const userInfo = `
+      <li class="list-group-item">
+        <strong>Name:</strong> ${name} <br>
+        <strong>Email:</strong> ${email} <br>
+        <strong>Phone:</strong> ${phone}
+      </li>
+    `;
+    contactList.innerHTML = userInfo;
+  }
+
+  // Event listener for form submission
+  contactForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+
+    // Call the function to display user information
+    displayUserInfo();
+
+    // Clear form fields after submission
+    contactForm.reset();
+  });
+
+});
