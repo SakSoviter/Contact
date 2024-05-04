@@ -28,6 +28,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const re = /^\d{10}$/;
     return re.test(phone);
   }
+    // Function to display user information in real-time
+  function displayUserInfo() {
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+
+    const userInfo = `
+      <li class="list-group-item">
+        <strong>Name:</strong> ${name} <br>
+        <strong>Email:</strong> ${email} <br>
+        <strong>Phone:</strong> ${phone}
+      </li>
+    `;
+    contactList.innerHTML = userInfo;
+  }
 
   // Event listener for form submission
   contactForm.addEventListener('submit', function (e) {
@@ -121,6 +136,21 @@ function validatePhone(phone) {
     contactInfo[2].textContent = `Phone: ${phone}`;
 
     updateLocalStorage();
+  }
+    // Function to display user information in real-time
+  function displayUserInfo() {
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+
+    const userInfo = `
+      <li class="list-group-item">
+        <strong>Name:</strong> ${name} <br>
+        <strong>Email:</strong> ${email} <br>
+        <strong>Phone:</strong> ${phone}
+      </li>
+    `;
+    contactList.innerHTML = userInfo;
   }
 
   // Event listener for form submission
