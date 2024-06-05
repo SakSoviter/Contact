@@ -1,0 +1,232 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact List</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .btn-wide {
+            width: 360px; /* Adjust the width as needed */
+        }
+        .custom-card {
+            width: 400px; /* Adjust the width as needed */
+            margin: 0 auto; /* Center the card */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- Add/Edit Contact Form in Card -->
+        <div class="card mb-4 custom-card">
+            <div class="card-header">
+                <span id="form-title">Add Information</span>
+            </div>
+            <div class="card-body">
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" class="form-control" id="name" placeholder="Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="text" class="form-control" id="phone" placeholder="Phone" required>
+                        <small class="form-text text-muted">Format: 000 000 000</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" placeholder="Email" required>
+                        <small class="form-text text-muted">Format: name@example.com</small>
+                    </div>
+                    <button class="btn btn-success btn-wide" type="submit" id="submitButton">Save</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Contact List Table -->
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Phone</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contactTableBody">
+                        <!-- Contact items will go here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    $(document).ready(function() {
+        let editIndex = -1; // Variable to track the index of the contact being edited
+
+        // Load contacts from local storage
+        loadContacts();
+
+        // Validate phone number
+        function isValidPhone(phone) {
+            const phonePattern = /^\d{3} \d{3} \d{3}$/;
+            return phonePattern.test(phone);
+        }
+
+        // Validate email
+        function isValidEmail(email) {
+            const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+            return emailPattern.test(email);
+        }
+
+        // Handle form submission
+        $('#contactForm').on('submit', function(event) {
+            event.preventDefault();
+            
+            // Get form values
+            var name = $('#name').val();
+            var phone = $('#phone').val();
+            var email = $('#email').val();
+
+            // Validate phone number and email
+            if (!isValidPhone(phone)) {
+                alert('Please enter a valid phone number in the format 000 000 000.');
+                return;
+}
+
+            if (!isValidEmail(email)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+
+            // Check if we are editing an existing contact
+            if (editIndex === -1) {
+                // Create new contact row
+                var newRow = `<tr>
+                                <td></td>
+                                <td>${name}</td>
+                                <td>${phone}</td>
+                                <td>${email}</td>
+                                <td>
+                                    <button class="btn btn-success btn-sm edit-btn">Edit</button>
+                                    <button class="btn btn-danger btn-sm delete-btn">Delete</button>
+                                </td>
+                              </tr>`;
+                // Append new row to table
+                $('#contactTableBody').append(newRow);
+            } else {
+                // Update existing contact
+                var row = $('#contactTableBody tr').eq(editIndex);
+                row.find('td').eq(1).text(name);
+                row.find('td').eq(2).text(phone);
+                row.find('td').eq(3).text(email);
+
+                // Reset edit index
+                editIndex = -1;
+
+                // Reset button text and form title
+                $('#submitButton').text('Save');
+                $('#form-title').text('Updated Contact');
+            }
+            
+            // Save contacts to local storage
+            saveContacts();
+
+            // Clear form
+            $('#contactForm')[0].reset();
+
+            // Update the numbering
+            updateContactNumbers();
+        });
+
+        // Handle edit button click
+        $('#contactTableBody').on('click', '.edit-btn', function() {
+            // Get the index of the row
+            editIndex = $(this).closest('tr').index();
+
+            // Get the contact details
+            var row = $(this).closest('tr');
+            var name = row.find('td').eq(1).text();
+            var phone = row.find('td').eq(2).text();
+            var email = row.find('td').eq(3).text();
+
+            // Set form values
+            $('#name').val(name);
+            $('#phone').val(phone);
+            $('#email').val(email);
+
+            // Update button text and form title
+            $('#submitButton').text('Update Contact');
+            $('#form-title').text('Edit Contact');
+        });
+
+        // Handle delete button click
+        $('#contactTableBody').on('click', '.delete-btn', function() {
+            $(this).closest('tr').remove();
+
+            // If deleting the contact being edited, reset the form
+            if ($(this).closest('tr').index() === editIndex) {
+                $('#contactForm')[0].reset();
+                $('#submitButton').text('Save');
+                $('#form-title').text('New Contact');
+                editIndex = -1;
+            }
+
+            // Save contacts to local storage
+            saveContacts();
+
+            // Update the numbering
+            updateContactNumbers();
+        });
+
+        // Save contacts to local storage
+        function saveContacts() {
+            var contacts = [];
+            $('#contactTableBody tr').each(function() {
+                var name = $(this).find('td').eq(1).text();
+                var phone = $(this).find('td').eq(2).text();
+                var email = $(this).find('td').eq(3).text();
+                contacts.push({ name: name, phone: phone, email: email });
+            });
+            localStorage.setItem('contacts', JSON.stringify(contacts));
+        }
+
+        // Load contacts from local storage
+        function loadContacts() {
+            var contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+            contacts.forEach(function(contact) {
+                var newRow = `<tr>
+                                <td></td>
+                                <td>${contact.name}</td>
+                                <td>${contact.phone}</td>
+                                <td>${contact.email}</td>
+<td>
+                                    <button class="btn btn-success btn-sm edit-btn">Edit</button>
+                                    <button class="btn btn-danger btn-sm delete-btn">Delete</button>
+                                </td>
+                              </tr>`;
+                $('#contactTableBody').append(newRow);
+            });
+
+            // Update the numbering
+            updateContactNumbers();
+        }
+
+        // Update contact numbers
+        function updateContactNumbers() {
+            $('#contactTableBody tr').each(function(index) {
+                $(this).find('td').eq(0).text(index + 1);
+            });
+        }
+    });
+    </script>
+</body>
+</html>
